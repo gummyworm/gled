@@ -3,6 +3,7 @@
 #include "rune.h"
 #include "matrix.h"
 #include "util.h"
+#include "uthash.h"
 
 #define MAX_RUNE_PAGES 512
 
@@ -25,6 +26,13 @@ static SDL_PixelFormat pixelFmt = {
   .Amask = 0xff000000
 };
 
+/* LoadedTex is the type stored in the texture -> name hash table */
+typedef struct {
+  GLuint tex;
+  char name[32];
+  UT_hash_handle hh;
+}LoadedTex;
+static LoadedTex *loadedTextures = NULL;
 
 /* renders the given character to a texture and returns its GL handle */
 static GLuint latin1_to_texture(char c)
@@ -33,7 +41,16 @@ static GLuint latin1_to_texture(char c)
   static SDL_Color color = {.r = 200, .g = 255, .b = 255, .a = 128};
   char str[2];
   SDL_Surface *surf;
+  LoadedTex *lup;
   GLuint tex;
+
+  str[0] = c;
+  str[1] = '\0';
+
+  HASH_FIND_STR(loadedTextures, str, lup);
+  if(lup != NULL){
+    return lup->tex;
+  }
 
   if(font == NULL){
     font = TTF_OpenFont("C64.ttf", 32);
@@ -43,8 +60,6 @@ static GLuint latin1_to_texture(char c)
     return 0;
   }
 
-  str[0] = c;
-  str[1] = '\0';
   tex = -1;
   if((surf = TTF_RenderText_Solid(font, str, color))){
     int colors;
@@ -64,6 +79,14 @@ static GLuint latin1_to_texture(char c)
     printf("error: failed to render char %c to texture: %s\n", c, TTF_GetError());
     tex = 0;
   }
+
+  lup = malloc(sizeof(LoadedTex));
+
+  lup->name[0] = c;
+  lup->name[1] = '\0';
+  lup->tex = tex;
+  HASH_ADD_STR(loadedTextures, name, lup);
+
   return tex;
 }
 
@@ -173,7 +196,7 @@ void rune_DrawChar(Rune *rune, uint32_t x, uint32_t y)
 
   /* load texture */
   if(r->texture == 0){
-    r->texture = latin1_to_texture('a'); //r->id); //bitmap_to_texture("fonts/ascii.bmp");
+    r->texture = latin1_to_texture(r->id);
     glGenSamplers(1, &sampler);
     glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
