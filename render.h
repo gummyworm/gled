@@ -21,7 +21,7 @@ enum {
   Z = 2,
 
   U = 0,
-  V = 0
+  V = 1
 };
 
 typedef struct {
