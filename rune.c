@@ -1,4 +1,4 @@
-#include <malloc.h>
+#include <stdlib.h>
 #include <SDL2/SDL_ttf.h>
 #include "rune.h"
 #include "matrix.h"
@@ -162,11 +162,11 @@ void rune_DrawChar(Rune *rune, uint32_t x, uint32_t y)
   const GLchar *fs = 
     "#version 150\n"
     "in vec2 out_texco;\n"
+    "out vec4 out_color;\n"
     "uniform sampler2D tex;\n"
     "void main()\n"
     "{\n"
-    "  vec4 color = texture(tex, out_texco);\n"
-    "  gl_FragColor = color;\n"
+    "  out_color = texture(tex, out_texco);\n"
     "}\n";
   static GLuint vao = 0;
   static GLuint vbo = 0;
@@ -196,7 +196,7 @@ void rune_DrawChar(Rune *rune, uint32_t x, uint32_t y)
 
   /* load texture */
   if(r->texture == 0){
-    r->texture = latin1_to_texture(r->id);
+    r->texture = latin1_to_texture('a'); //r->id);
     glGenSamplers(1, &sampler);
     glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -260,6 +260,7 @@ void rune_DrawChar(Rune *rune, uint32_t x, uint32_t y)
       glGetProgramiv(shader, GL_INFO_LOG_LENGTH, &logSz);
       log = malloc(logSz * sizeof(GLchar));
       glGetProgramInfoLog(shader, logSz, &logSz, log);
+      puts(fs);
       puts(log);
       free(log);
     }

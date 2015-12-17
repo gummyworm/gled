@@ -24,6 +24,7 @@ void del_Window(Window*);
 
 void window_redraw(Window*);
 void window_update(Window*);
+void window_resize(Window*, uint32_t, uint32_t);
 
 #endif
 

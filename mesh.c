@@ -2,7 +2,7 @@
 #include <assimp/mesh.h>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include "mesh.h"
 

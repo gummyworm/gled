@@ -8,9 +8,9 @@ SRC_EXT = c
 # Path to the source directory, relative to the makefile
 SRC_PATH = .
 # Space-separated pkg-config libraries used by this project
-LIBS = sdl2 SDL2_ttf assimp gl glu glew
+LIBS = sdl2 SDL2_ttf assimp glew 
 # non-pkg-config libraries (with -l prefix)
-OTHER_LIBS = -ljubatus_msgpack-rpc -lm -lfreetype
+OTHER_LIBS = -lm -lfreetype -framework OpenGL
 # General compiler flags
 COMPILE_FLAGS = -std=c99 -Wall -Wextra -g
 # Additional release-specific flags

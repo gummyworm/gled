@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include "window.h"
+#include "util.h"
 
 Window * new_Window(uint32_t width, uint32_t height)
 {
@@ -7,6 +8,7 @@ Window * new_Window(uint32_t width, uint32_t height)
   Window *w;
 
   w = malloc(sizeof(Window));
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
   SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
@@ -16,19 +18,25 @@ Window * new_Window(uint32_t width, uint32_t height)
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+  SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
   w->win = SDL_CreateWindow("VimGL", 
-                  SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                  SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                   width * 32, height * 32, 
-                  SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS);
+                  SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+  if(w->win == NULL){
+    puts("error: failed to create window.");
+    return NULL;
+  }
   w->ctx = SDL_GL_CreateContext(w->win);
   if(w->ctx == NULL){
     puts("error: failed to create GL context");
+    return NULL;
   }
   glewExperimental = GL_TRUE;
   if(glewInit() != GLEW_OK){
     puts("error: failed to initialize GLEW");
+    return NULL;
   }
-
   w->w = width;
   w->h = height;
 
@@ -37,14 +45,21 @@ Window * new_Window(uint32_t width, uint32_t height)
       w->buff[i][j].ch = rune_blankChar;
     }
   }
-  return w;
   GL_CHECK();
+  return w;
 }
 
 void del_Window(Window * w)
 {
-  SDL_GL_DeleteContext(w->ctx);
-  SDL_DestroyWindow(w->win);
+  if(w == NULL){
+    return;
+  }
+  if(w->ctx != NULL){
+    SDL_GL_DeleteContext(w->ctx);
+  }
+  if(w->win){
+    SDL_DestroyWindow(w->win);
+  }
   free(w);
 }
 
@@ -108,5 +123,12 @@ void window_update(Window *w)
       }
     }
   }
+}
+
+/* window_resize resizes win to cols x rows tiles */
+void window_resize(Window *win, uint32_t cols, uint32_t rows)
+{
+  win->w = cols;
+  win->h = rows;
 }
 
