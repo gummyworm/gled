@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <msgpack.h>
 
 /* msgpack notifications */
@@ -11,8 +12,46 @@ static int num_responses;
 /* TODO: */
 /* static gled_vim_str2funcID function_map; */
 
+static gled_neofunc functions[MAX_NEOFUNCTIONS];
+static int num_functions;
+
 static uint64_t gled_method_id(const char *func);
 
+struct {
+  char name[32];
+  msgpack_pack_object obj;
+  UT_hash_handle hh;
+}Service;
+
+/* map of services (e.g. "functions") to associated object. */
+static struct Service * services_map;
+
+void add_service(char *name, msgpack_pack_object *obj)
+{
+  struct Service *srv = malloc(sizeof(struct Service));
+  strncpy(srv->name, name, 32);
+  srv->obj = *obj;
+  HASH_ADD_STR(services_map, name, srv);
+}
+
+void gled_server_init()
+{
+
+  msgpack_unpacked up;
+  msgpack_sbuffer buffer;
+  msgpack_object obj;
+
+  msgpack_zone_init(&mempool, 2048);
+  msgpack_unpack(buffer.data, buffer.size, NULL, &mempool, &obj);
+
+  services_map = msgpac_unpack
+  /* download "classes" and "functions" from the neovim instance */
+  for(i = 0; i < num_functions; ++i){
+    gled_neofunc nf;
+    nf.name = 
+    = functions[i];
+  }
+}
 
 void get_response(msgpack_object_array *msg)
 {
@@ -102,4 +141,12 @@ void gled_current(const char *prop)
 uint64_t gled_request(uint64_t id, msgpack_object *args)
 {
   /* TODO: send the request */
+  msgpack_sbuffer *buffer;
+  msgpack_packer pac;
+
+  msgpack_pack_array(&pac, 3);
+  msgpack_pack_uint64(&pac, REQUEST);
+  msgpack_pack_uint64(&pac, id);
+  msgpack_pack_object(
+
 }
