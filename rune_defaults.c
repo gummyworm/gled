@@ -17,6 +17,8 @@ MeshRune rune_blankMesh = {
     .h = 1,
     .draw = rune_Draw,
     .update = NULL 
-  }
+  },
+  .x = 0,
+  .y = 0,
 };
 

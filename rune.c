@@ -63,7 +63,6 @@ static GLuint latin1_to_texture(char c)
   tex = -1;
   if((surf = TTF_RenderText_Solid(font, str, color))){
     int colors;
-    GLuint fmt;
     SDL_Surface *optSurf;
 
     optSurf = SDL_ConvertSurface(surf, &pixelFmt, SDL_SWSURFACE);
@@ -145,52 +144,12 @@ void rune_Draw(Rune *r, uint32_t x, uint32_t y)
 }
 
 /* rune_DrawChar renders the given rune at char position (x, y) */
-void rune_DrawChar(Rune *rune, uint32_t x, uint32_t y)
+RuneDrawResult rune_DrawChar(Rune *rune, uint32_t x, uint32_t y)
 {
-  const GLchar *vs = 
-    "#version 150\n"
-    "in vec2 pos;\n"
-    "in vec2 texco;\n"
-    "out vec2 out_texco;\n"
-    "uniform sampler2D tex;\n"
-    "uniform mat4 mvp;\n"
-    "void main()\n"
-    "{\n"
-    "  out_texco = texco;\n"
-    "  gl_Position = mvp * vec4(pos, 0.0, 1.0);\n"
-    "}\n";
-  const GLchar *fs = 
-    "#version 150\n"
-    "in vec2 out_texco;\n"
-    "out vec4 out_color;\n"
-    "uniform sampler2D tex;\n"
-    "void main()\n"
-    "{\n"
-    "  out_color = texture(tex, out_texco);\n"
-    "}\n";
-  static GLuint vao = 0;
-  static GLuint vbo = 0;
-  static GLuint ibo = 0;
-  static GLfloat vertices[4 * 4] = { /* 4 vertices. format: x-y-u-v */
-    0.0f, 0.0f, 0.0f, 0.0f,
-    1.0f, 0.0f, 1.0f, 0.0f,
-    1.0f, 1.0f, 1.0f, 1.0f,
-    0.0f, 1.0f, 0.0f, 1.0f,
-  };
-  static GLshort indices[3 * 2] = { /* 2 triangles */
-    0, 1, 2,
-    0, 3, 2
-  };
-  static Mat4x4 mvp;
-  static GLuint mvpUniform;
-  static GLuint texUniform;
-  static GLuint shader;
-  static GLuint sampler;
-
-  GLenum err;
-  GLint compiled, linked;
+  RuneDrawResult res;
   CharRune *r;
   GLfloat u, v;
+  GLuint sampler;
 
   r = (CharRune*)rune;
 
@@ -203,142 +162,24 @@ void rune_DrawChar(Rune *rune, uint32_t x, uint32_t y)
     glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
     glSamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16.0f);
+
   }
+  res.tex = r->texture;
+  res.clip.x = 0.0f;
+  res.clip.y = 0.0f;
+  res.clip.w = 1.0f;
+  res.clip.h = 1.0f;
 
-  /* create shader program */
-  if(shader == 0){
-    GLuint frag, vert;
-    GLint len;
-
-    /* vertex shader */
-    vert = glCreateShader(GL_VERTEX_SHADER);
-    len = strlen(vs);
-    glShaderSource(vert, 1, &vs, &len);
-    glCompileShader(vert);
-    glGetShaderiv(vert, GL_COMPILE_STATUS, &compiled);
-    if(compiled == GL_FALSE){
-      GLint logSz;
-      GLchar *log;
-
-      glGetShaderiv(vert, GL_INFO_LOG_LENGTH, &logSz);
-      log = malloc(logSz * sizeof(GLchar));
-      glGetShaderInfoLog(vert, logSz, &logSz, log);
-      puts("error: vertex shader compilation failed");
-      puts(log);
-      free(log);
-    }
-    /* fragment shader */
-    frag = glCreateShader(GL_FRAGMENT_SHADER);
-    len = strlen(fs);
-    glShaderSource(frag, 1, &fs, &len);
-    glCompileShader(frag);
-    glGetShaderiv(frag, GL_COMPILE_STATUS, &compiled);
-    if(compiled == GL_FALSE){
-      GLint logSz;
-      GLchar *log;
-
-      glGetShaderiv(vert, GL_INFO_LOG_LENGTH, &logSz);
-      log = malloc(logSz * sizeof(GLchar));
-      glGetShaderInfoLog(vert, logSz, &logSz, log);
-      puts("error: fragment shader compilation failed");
-      puts(log);
-      free(log);
-    }
-
-    /* link shaders */
-    shader = glCreateProgram();
-    glAttachShader(shader, vert);
-    glAttachShader(shader, frag);
-    glBindAttribLocation(shader, 0, "pos");
-    glBindAttribLocation(shader, 1, "texco");
-    glLinkProgram(shader);
-    glGetProgramiv(shader, GL_LINK_STATUS, &linked);
-    if(linked == GL_FALSE){
-      GLint logSz;
-      GLchar *log;
-
-      glGetProgramiv(shader, GL_INFO_LOG_LENGTH, &logSz);
-      log = malloc(logSz * sizeof(GLchar));
-      glGetProgramInfoLog(shader, logSz, &logSz, log);
-      puts(fs);
-      puts(log);
-      free(log);
-    }
-    /* get the uniforms */
-    mvpUniform = glGetUniformLocation(shader, "mvp");
-    mat4x4_orthographic(&mvp, 0.0f, 80.0f, 0.0f, 40.0f, -1.0f, 1.0f);
-    texUniform = glGetUniformLocation(shader, "tex");
-  }
-
-  /* create vertex attribute object */
-  if(vao == 0){
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-    glGenBuffers(1, &ibo);
-
-    /* vertices */
-    glBindVertexArray(vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 4 * 4,
-      vertices, GL_STATIC_DRAW);
-
-    /* indices */
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLshort) * 6,
-      indices, GL_STATIC_DRAW);
-  }
-
-  /* update VBO */
-  r->id = 1;
-  u = 1.0f / 16.0f * (r->id % 16);
-  v = 1.0f / 16.0f * (r->id / 16);
-  vertices[0] = x;
-  vertices[1] = y;
-  //vertices[2] = u;
-  //vertices[3] = v;
-
-  vertices[0+4] = x + rune->w;
-  vertices[1+4] = y;
-  //vertices[2+4] = u+(1.0f/16.0f);
-  //vertices[3+4] = v;
-
-  vertices[0+8] = x + rune->w;
-  vertices[1+8] = y + rune->h;
-  //vertices[2+8] = u+(1.0f/16.0f);
-  //vertices[3+8] = v+(1.0f/16.0f);
-
-  vertices[0+12] = x;
-  vertices[1+12] = y + rune->h;
-  //vertices[2+12] = u;
-  //vertices[3+12] = v+(1.0f/16.0f);
-  glBindVertexArray(vao);
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 4 * 4,
-    vertices, GL_STATIC_DRAW);
-
-  /* draw */
-  glUseProgram(shader);
-  glUniformMatrix4fv(mvpUniform, 1, 0, ((GLfloat*)&mvp));
-
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, r->texture);
-  glUniform1i(texUniform, 0);
-  glBindVertexArray(vao);
-
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*4, (void*)0);
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*4, (void*)8);
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0);
+  return res;
 }
 
 /* rune_DrawMesh renders a mesh at char position (x, y) */
 void rune_DrawMesh(MeshRune *r, uint32_t x, uint32_t y)
 {
-
+  /* do not render if this isn't the upper-left corner */
+  if((r->x != 0) || (r->y != 0)){
+    return;
+  }
 }
 
 /* rune_Update executes r's update method */
