@@ -30,6 +30,7 @@ enum{
 /* RuneDrawTarget contains the information used to apply a rune's render */
 typedef struct{
   GLuint tex;
+  Rect pos;
   Rect clip;
 }RuneDrawResult;
 
@@ -61,11 +62,19 @@ typedef struct{
   Mesh mesh;        /* mesh to render */
 }MeshRune;
 
+/* ImgRune is a multi-cell static image */
+typedef struct{
+  Rune r;
+  GLuint texture;
+  const char *filename; /* the filename of the image */
+}ImgRune;
+
 /* Rune is a container large enough to hold any Rune type */
 typedef union {
   Rune r;
   CharRune ch;
   MeshRune mesh;
+  ImgRune img;
 }Rune_;
 
 Rune *new_CharRune();
@@ -73,12 +82,13 @@ void del_Rune(Rune*);
 
 void rune_Draw(Rune*, uint32_t, uint32_t);
 RuneDrawResult rune_DrawChar(Rune*, uint32_t, uint32_t);
+RuneDrawResult rune_DrawImg(Rune*, uint32_t, uint32_t);
 
 void rune_Update(Rune*);
 
 extern CharRune rune_blankChar;
 extern MeshRune rune_blankMesh;
-
+extern ImgRune  rune_blankImg;
 
 #endif
 

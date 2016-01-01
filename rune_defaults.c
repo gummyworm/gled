@@ -22,3 +22,14 @@ MeshRune rune_blankMesh = {
   .y = 0,
 };
 
+ImgRune rune_blankImg = {
+  .r = {
+    .w = 8,
+    .h = 8,
+    .draw = rune_DrawImg,
+    .update = NULL 
+  },
+  .texture = 0,
+  .filename = NULL
+};
+

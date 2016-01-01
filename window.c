@@ -47,6 +47,11 @@ Window * new_Window(uint32_t width, uint32_t height)
       w->buff[i][j].ch = rune_blankChar;
     }
   }
+
+  /* TODO: test */
+  w->buff[2][3].img = rune_blankImg;
+  w->buff[2][3].img.filename = "fonts/ascii.bmp";
+
   GL_CHECK();
   return w;
 }
@@ -223,7 +228,6 @@ void window_DrawRune(GLuint tex, Rect pos, Rect clip)
     vertices, GL_STATIC_DRAW);
 
   /* draw */
-  printf("Drawing %d @ (%f, %f, %f, %f)\n", tex, pos.x, pos.y, pos.w, pos.h);
   glUseProgram(shader);
   glUniformMatrix4fv(mvpUniform, 1, 0, ((GLfloat*)&mvp));
 
@@ -264,16 +268,16 @@ void window_redraw(Window *w)
         RuneDrawResult res;
         Rect pos;
         res = r->draw(r, j, i);
-        pos.x = i;
-        pos.y = j;
-        pos.w = 1;
-        pos.h = 1;
-        window_DrawRune(res.tex, pos, res.clip);
+        res.pos.x += i;
+        res.pos.y += j;
+        window_DrawRune(res.tex, res.pos, res.clip);
       }
       /* mark the area that this rune renders to as 'clean' */
-      for(k = i; k < (r->h + w->h) && (k < w->h); ++k){
-        for(l = j; l < (r->w + w->w) && (l < w->w); ++l){
-          r->flags.dirty = false;
+      for(k = 0; (k < r->h) && (k < w->h); ++k){
+        for(l = 0; (l < r->w) && (l < w->w); ++l){
+          Rune *clean;
+          clean = &w->buff[i+k][j+l].r;
+          clean->flags.dirty = false;
         }
       }
     }

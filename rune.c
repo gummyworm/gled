@@ -108,6 +108,7 @@ static GLuint bitmap_to_texture(const char *file)
   }else{
     printf("error: failed to load texture %s\n", file);
   }
+  printf("%d\n", tex);
   return tex;
 }
 
@@ -165,6 +166,47 @@ RuneDrawResult rune_DrawChar(Rune *rune, uint32_t x, uint32_t y)
 
   }
   res.tex = r->texture;
+
+  res.pos.x = 0.0f;
+  res.pos.y = 0.0f;
+  res.pos.w = rune->w;
+  res.pos.h = rune->h;
+
+  res.clip.x = 0.0f;
+  res.clip.y = 0.0f;
+  res.clip.w = 1.0f;
+  res.clip.h = 1.0f;
+
+  return res;
+}
+
+/* rune_DrawImg renders the given image rune */
+RuneDrawResult rune_DrawImg(Rune *rune, uint32_t x, uint32_t y)
+{
+  RuneDrawResult res;
+  ImgRune *r;
+  GLfloat u, v;
+  GLuint sampler;
+
+  r = (ImgRune*)rune;
+
+  /* load image as texture */
+  if(r->texture == 0){
+    r->texture = bitmap_to_texture(r->filename);
+    glGenSamplers(1, &sampler);
+    glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    glSamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16.0f);
+  }
+  res.tex = r->texture;
+
+  res.pos.x = 0.0f;
+  res.pos.y = 0.0f;
+  res.pos.w = rune->w;
+  res.pos.h = rune->h;
+
   res.clip.x = 0.0f;
   res.clip.y = 0.0f;
   res.clip.w = 1.0f;
