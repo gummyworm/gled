@@ -142,7 +142,7 @@ void mesh_Load(Mesh *m, const char *filename) {
 	}
 
 	/* get the indices for the faces */
-	m->faces = malloc(sizeof(Face) * 3 * m->numFaces);
+	m->faces = malloc(sizeof(Face) * m->numFaces);
 	for (i = 0; i < iMesh->mNumFaces; ++i) {
 		m->faces[i][0] = iMesh->mFaces[i].mIndices[0];
 		m->faces[i][1] = iMesh->mFaces[i].mIndices[1];
@@ -156,12 +156,26 @@ void mesh_Load(Mesh *m, const char *filename) {
 	glGenBuffers(1, &m->ibo);
 
 	glBindVertexArray(m->vao);
+	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, m->vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(MeshVertex) * m->numVertices,
 		     m->vertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex),
+			      (GLvoid *)offsetof(MeshVertex, pos));
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex),
+			      (GLvoid *)offsetof(MeshVertex, normal));
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(MeshVertex),
+			      (GLvoid *)offsetof(MeshVertex, color));
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(MeshVertex),
+			      (GLvoid *)offsetof(MeshVertex, texco));
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->ibo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLshort) * 3 * m->numFaces,
+
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Face) * m->numFaces,
 		     m->faces, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->ibo);
 }
 
 /* mesh_Draw renders mesh m. */
@@ -206,20 +220,6 @@ void mesh_Draw(Mesh *m) {
 	glDepthFunc(GL_LEQUAL);
 
 	glBindBuffer(GL_ARRAY_BUFFER, m->vao);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex),
-			      (GLvoid *)offsetof(MeshVertex, pos));
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex),
-			      (GLvoid *)offsetof(MeshVertex, normal));
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(MeshVertex),
-			      (GLvoid *)offsetof(MeshVertex, color));
-	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(MeshVertex),
-			      (GLvoid *)offsetof(MeshVertex, texco));
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->ibo);
 	glDrawElements(GL_TRIANGLES, m->numFaces * 3, GL_UNSIGNED_SHORT,
 		       (void *)0);
 
