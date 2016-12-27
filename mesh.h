@@ -4,40 +4,45 @@
 #include <GL/glew.h>
 #include "render.h"
 
-
 /* if >0, the offset of the attribute in the vertex memory layout */
 typedef struct {
-  int pos;
-  int color;
-  int normal;
-  int texco;
-}MeshAttributes;
+	int pos;
+	int color;
+	int normal;
+	int texco;
+} MeshAttributes;
 
 /* the standard vertex for meshes */
 typedef struct {
-  Position pos;
-  Color    color;
-  Normal   normal;
-  Texco    texco;
-}MeshVertex;
+	Position pos;
+	Normal normal;
+	Color color;
+	Texco texco;
+} MeshVertex;
 
 typedef struct {
-  MeshAttributes attributes;
+	MeshAttributes attributes;
 
-  MeshVertex *vertices;
-  uint32_t numVertices;
+	MeshVertex *vertices;
+	uint32_t numVertices;
 
-  Face *faces;
-  uint32_t numFaces;
+	Face *faces;
+	uint32_t numFaces;
 
-  GLuint vao;
-}Mesh;
+	GLuint vao; /* vertex attribute object */
+	GLuint vbo;
+	GLuint ibo;
+	GLuint fbo; /* framebuffer object to render to */
 
-Mesh * new_Mesh();
-void   del_Mesh(Mesh*);
+	GLuint color; /* color texture */
+	GLuint depth; /* depth texture */
+} Mesh;
 
-void mesh_Load(Mesh*, const char *);
-void mesh_Draw(Mesh*);
+void init_Mesh();
+Mesh *new_Mesh();
+void del_Mesh(Mesh *);
+
+void mesh_Load(Mesh *, const char *);
+void mesh_Draw(Mesh *);
 
 #endif
-

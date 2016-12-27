@@ -2,34 +2,21 @@
 
 /* rune_blank represents no character (empty space in buffer) */
 CharRune rune_blankChar = {
-  .r = {
-    .w = 1,
-    .h = 1,
-    .draw = rune_DrawChar,
-    .update = NULL
-  },
-  .texture = 0
-};
+    .r = {.w = 1, .h = 1, .draw = rune_DrawChar, .update = NULL}, .texture = 0};
 
 MeshRune rune_blankMesh = {
-  .r = {
-    .w = 1,
-    .h = 1,
-    .draw = rune_Draw,
-    .update = NULL 
-  },
-  .x = 0,
-  .y = 0,
-};
+    .r = {.w = 1, .h = 1, .draw = rune_DrawMesh, .update = NULL},
+    .x = 0,
+    .y = 0,
+    .mesh = {.vertices = NULL,
+	     .numVertices = 0,
+	     .numFaces = 0,
+	     .vao = 0,
+	     .fbo = 0,
+	     .color = 0,
+	     .depth = 0}};
 
 ImgRune rune_blankImg = {
-  .r = {
-    .w = 8,
-    .h = 8,
-    .draw = rune_DrawImg,
-    .update = NULL 
-  },
-  .texture = 0,
-  .filename = NULL
-};
-
+    .r = {.w = 8, .h = 8, .draw = rune_DrawImg, .update = NULL},
+    .texture = 0,
+    .filename = NULL};

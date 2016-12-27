@@ -10,33 +10,29 @@ extern "C" {
 /**
  * A basic type for representing a point in 2-dimensional space.
  */
-typedef struct Vector2 {
-    float x, y;
-}Vector2;
+typedef struct Vector2 { float x, y; } Vector2;
 
 /**
  * A basic type for representing a point in 3-dimensional space.
  */
-typedef struct Vector3 {
-    float x, y, z;
-}Vector3;
+typedef struct Vector3 { float x, y, z; } Vector3;
 
 /**
  * A type for representing the position, scale, and rotation of an object.
  */
 typedef struct tagTvTransform {
-  Vector3 position;
-  Vector3 scale;
-  Vector3 rotation;
-}TvTransform;
+	Vector3 position;
+	Vector3 scale;
+	Vector3 rotation;
+} TvTransform;
 
 /**
  * A type for representing a Rectangle.
  */
 typedef struct tagRect {
-    float x, y;
-    float w, h;
-}Rect;
+	float x, y;
+	float w, h;
+} Rect;
 
 /**
  * Checks if the given Rectangle contains the given point.
@@ -56,9 +52,7 @@ bool Rect_overlaps(Rect* r1, Rect* r2);
 /**
  * A basic type for representing a point in 4-dimensional space
  */
-typedef struct Vector4 {
-  float x, y, z, w;
-}Vector4;
+typedef struct Vector4 { float x, y, z, w; } Vector4;
 typedef Vector4 quaternion;
 
 extern const Vector2 Vector2_zero;
@@ -88,9 +82,9 @@ void Vector2_normalize(Vector2 v, Vector2* result);
 void Vector3_normalize(Vector3 v, Vector3* result);
 
 /* scale */
-void Vector2_scale(Vector2 *v, float factor);
-void Vector3_scale(Vector3 *v, float factor);
-void Vector4_scale(Vector4 *v, float factor);
+void Vector2_scale(Vector2* v, float factor);
+void Vector3_scale(Vector3* v, float factor);
+void Vector4_scale(Vector4* v, float factor);
 
 /* cross product */
 float Vector2_cross(Vector2* v1, Vector2* v2);
@@ -124,7 +118,7 @@ void Vector3_diRection(Vector3 v1, Vector3 v2, Vector3* result);
  * @param v1 the first Vector to interpolate from.
  * @param v2 the Vector to interpolate to.
  * @param t the time (0-1)
- * @return the new Vector 
+ * @return the new Vector
  */
 Vector2 Vector2_lerp(Vector2 v1, Vector2 v2, float t);
 
@@ -150,4 +144,3 @@ Vector4 Vector4_lerp(Vector4 v1, Vector4 v2, float t);
 }
 #endif
 #endif
-

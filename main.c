@@ -2,28 +2,26 @@
 #include <stdbool.h>
 #include "gled.h"
 
-int main(int argc, char **argv)
-{
-  bool run;
-  SDL_Event evt;
+int main() {
+	bool run;
+	SDL_Event evt;
 
-  gled_init();
+	gled_init();
 
-  for(run=true; run;){
-    /* get input */
-    while(SDL_PollEvent(&evt)){
-      switch(evt.type){
-        case SDL_QUIT:
-         run = false;
-         break;
-        default:
-         break;
-      }
-    }
+	for (run = true; run;) {
+		/* get input */
+		while (SDL_PollEvent(&evt)) {
+			switch (evt.type) {
+				case SDL_QUIT:
+					run = false;
+					break;
+				default:
+					break;
+			}
+		}
 
-    /* handle nvim events */
-  }
-  gled_quit();
-  return 0;
+		/* handle nvim events */
+	}
+	gled_quit();
+	return 0;
 }
-
