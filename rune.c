@@ -216,15 +216,14 @@ RuneDrawResult rune_DrawMesh(Rune *r, uint32_t x, uint32_t y) {
 
 	res.pos.x = 0.0f;
 	res.pos.y = 0.0f;
-	res.pos.w = 1.0f;  // r->w;
-	res.pos.h = 1.0f;  // r->h;
+	res.pos.w = r->w;
+	res.pos.h = r->h;
 
 	res.clip.x = 0.0f;
 	res.clip.y = 0.0f;
 	res.clip.w = 1.0f;
 	res.clip.h = 1.0f;
 
-	printf("%d\n", res.tex);
 	return res;
 }
 

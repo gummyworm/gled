@@ -21,8 +21,6 @@ typedef struct {
 } MeshVertex;
 
 typedef struct {
-	MeshAttributes attributes;
-
 	MeshVertex *vertices;
 	uint32_t numVertices;
 

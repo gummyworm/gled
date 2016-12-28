@@ -107,7 +107,7 @@ void mesh_Load(Mesh *m, const char *filename) {
 	hasTexcos = iMesh->mTextureCoords[0] != NULL;
 
 	/* get the vertices */
-	for (i = 0; i < iMesh->mNumVertices; ++i) {
+	for (i = 0; i < m->numVertices; ++i) {
 		m->vertices[i].pos[0] = iMesh->mVertices[i].x;
 		m->vertices[i].pos[1] = iMesh->mVertices[i].y;
 		m->vertices[i].pos[2] = iMesh->mVertices[i].z;
@@ -136,7 +136,7 @@ void mesh_Load(Mesh *m, const char *filename) {
 			m->vertices[i].color[3] = iMesh->mColors[i][0].a;
 		} else {
 			m->vertices[i].color[0] = m->vertices[i].color[1] =
-			    m->vertices[i].color[2] = 0.5f;
+			    m->vertices[i].color[2] = 0.0f;
 			m->vertices[i].color[3] = 1.0f;
 		}
 	}
@@ -149,11 +149,14 @@ void mesh_Load(Mesh *m, const char *filename) {
 		m->faces[i][2] = iMesh->mFaces[i].mIndices[2];
 	}
 	m->numFaces = iMesh->mNumFaces;
-	printf("%d faces\n", m->numFaces);
 
 	glGenVertexArrays(1, &m->vao);
 	glGenBuffers(1, &m->vbo);
 	glGenBuffers(1, &m->ibo);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->ibo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Face) * m->numFaces,
+		     m->faces, GL_STATIC_DRAW);
 
 	glBindVertexArray(m->vao);
 	glEnableVertexAttribArray(0);
@@ -171,11 +174,9 @@ void mesh_Load(Mesh *m, const char *filename) {
 	glEnableVertexAttribArray(3);
 	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(MeshVertex),
 			      (GLvoid *)offsetof(MeshVertex, texco));
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->ibo);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Face) * m->numFaces,
-		     m->faces, GL_STATIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->ibo);
+	aiReleaseImport(scene);
 }
 
 /* mesh_Draw renders mesh m. */
@@ -219,12 +220,14 @@ void mesh_Draw(Mesh *m) {
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 
-	glBindBuffer(GL_ARRAY_BUFFER, m->vao);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->ibo);
+	glBindVertexArray(m->vao);
 	glDrawElements(GL_TRIANGLES, m->numFaces * 3, GL_UNSIGNED_SHORT,
 		       (void *)0);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(vp[0], vp[1], vp[2], vp[3]);
 	glDisable(GL_DEPTH_TEST);
+
 	return;
 }

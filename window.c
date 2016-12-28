@@ -1,6 +1,8 @@
 #include "window.h"
 #include <SDL2/SDL.h>
+#include <stdlib.h>
 #include "matrix.h"
+#include "rune.h"
 #include "util.h"
 #include "vector.h"
 
@@ -50,8 +52,12 @@ Window *new_Window(uint32_t width, uint32_t height) {
 	/* TODO: test */
 	w->buff[2][3].img = rune_blankImg;
 	w->buff[2][3].img.filename = "fonts/ascii.bmp";
-	w->buff[0][0].mesh = rune_blankMesh;
-	w->buff[0][0].mesh.filename = "cube.obj";
+
+	MeshRune m = rune_blankMesh;
+	m.filename = "cube.obj";
+	m.r.w = 3;
+	m.r.h = 3;
+	window_setMesh(w, 0, 0, &m);
 
 	return w;
 }
@@ -259,4 +265,21 @@ void window_update(Window *w) {
 void window_resize(Window *win, uint32_t cols, uint32_t rows) {
 	win->w = cols;
 	win->h = rows;
+}
+
+/* window_at returns a reference to the rune at (x, y). */
+Rune_ *window_at(Window *win, uint32_t x, uint32_t y) {
+	return &win->buff[x][y];
+}
+
+void window_setChar(Window *w, uint32_t x, uint32_t y, CharRune *r) {
+	memcpy(&(window_at(w, x, y)->ch), r, sizeof(CharRune));
+}
+
+void window_setMesh(Window *w, uint32_t x, uint32_t y, MeshRune *r) {
+	memcpy(&(window_at(w, x, y)->mesh), r, sizeof(MeshRune));
+}
+
+void window_setImg(Window *w, uint32_t x, uint32_t y, ImgRune *r) {
+	memcpy(&(window_at(w, x, y)->img), r, sizeof(ImgRune));
 }

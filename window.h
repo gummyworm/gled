@@ -22,5 +22,10 @@ void del_Window(Window *);
 void window_redraw(Window *);
 void window_update(Window *);
 void window_resize(Window *, uint32_t, uint32_t);
+Rune_ *window_at(Window *, uint32_t, uint32_t);
+
+void window_setChar(Window *, uint32_t, uint32_t, CharRune *);
+void window_setMesh(Window *, uint32_t, uint32_t, MeshRune *);
+void window_setImg(Window *, uint32_t, uint32_t, ImgRune *);
 
 #endif

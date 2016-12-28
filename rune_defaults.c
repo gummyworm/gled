@@ -10,8 +10,11 @@ MeshRune rune_blankMesh = {
     .y = 0,
     .mesh = {.vertices = NULL,
 	     .numVertices = 0,
+	     .faces = NULL,
 	     .numFaces = 0,
 	     .vao = 0,
+	     .ibo = 0,
+	     .vbo = 0,
 	     .fbo = 0,
 	     .color = 0,
 	     .depth = 0}};
