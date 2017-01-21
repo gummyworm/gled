@@ -3,7 +3,7 @@
 #include <SDL2/SDL_ttf.h>
 #include "window.h"
 
-static Window *main_win;
+static Window* main_win;
 
 int gled_init() {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -44,3 +44,5 @@ void gled_resize(uint64_t cols, uint64_t rows) {
 void gled_onmousepress(uint64_t x, uint64_t y) {}
 
 void gled_onmouserelease(uint64_t x, uint64_t y) {}
+
+void gled_set_mainwin(Window* w) { main_win = w; }
